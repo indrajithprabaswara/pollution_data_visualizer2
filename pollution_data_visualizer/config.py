@@ -6,5 +6,6 @@ class Config:
     BASE_URL = 'https://api.waqi.info/feed/{}/?token=' + API_KEY
     
     # Database Configuration (For Local Testing, PostgreSQL can be hosted on Heroku)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'postgresql://localhost/pollution_db')
+    # Use a lightweight SQLite database by default for easier local setup.
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///pollution.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
