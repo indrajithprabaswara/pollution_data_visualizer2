@@ -9,6 +9,12 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
+
+@app.before_first_request
+def setup_database():
+    """Ensure database tables exist."""
+    db.create_all()
+
 # Route to show the main page with a search bar
 @app.route('/')
 def index():
