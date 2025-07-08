@@ -1,22 +1,37 @@
-import os
-import sys
-import unittest
-from unittest.mock import patch
+import requests
+from config import Config
+from datetime import datetime
+from models import db, AirQualityData
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Function to fetch air quality data from AQICN API
+def fetch_air_quality(city):
+    url = Config.BASE_URL.format(city)
+    response = requests.get(url)
+    data = response.json()
 
-from data_collector import fetch_air_quality
+    # Check if API response status is OK
+    if data.get("status") == "ok":
+        aqi = data["data"]["aqi"]
+        timestamp = datetime.now()
+        return aqi, timestamp
+    else:
+        raise Exception(f"Failed to fetch data for {city}. Error: {data.get('data', {}).get('error', 'Unknown error')}")
+        
+# Function to save the collected data to the database
+def save_air_quality_data(city, aqi, timestamp):
+    air_quality_data = AirQualityData(city=city, aqi=aqi, timestamp=timestamp)
+    db.session.add(air_quality_data)
+    db.session.commit()
 
-class TestDataCollector(unittest.TestCase):
-    @patch('data_collector.requests.get')
-    def test_fetch_air_quality(self, mock_get):
-        mock_get.return_value.json.return_value = {
-            'status': 'ok',
-            'data': {'aqi': 42}
-        }
-        aqi, timestamp = fetch_air_quality('TestCity')
-        self.assertEqual(aqi, 42)
-        self.assertIsNotNone(timestamp)
+# Function to collect data for a specific city
+def collect_data(city):
+    aqi, timestamp = fetch_air_quality(city)
+    save_air_quality_data(city, aqi, timestamp)
 
-if __name__ == '__main__':
-    unittest.main()
+# Example of how you could collect data for multiple cities
+def collect_data_for_multiple_cities(cities):
+    for city in cities:
+        try:
+            collect_data(city)
+        except Exception as e:
+            print(f"Error collecting data for {city}: {e}")
