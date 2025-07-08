@@ -24,8 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error(data.error);
                     return;
                 }
-                renderCityCard(city, data.aqi);
-                fetchCityHistory(city);
+                renderCityCard(city, data);
             })
             .catch(err => console.error(err));
     }
@@ -53,10 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     options: { responsive: true, scales: { y: { beginAtZero: true } } }
                 });
+                updatePieChart(city, history);
             });
     }
 
-    function renderCityCard(city, aqi) {
+    function renderCityCard(city, data) {
         let card = document.querySelector(`[data-card="${city}"]`);
         if (!card) {
             const col = document.createElement('div');
@@ -65,15 +65,79 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="card" data-card="${city}">
                     <div class="card-body">
                         <h5 class="card-title">${city}</h5>
-                        <p class="card-text">AQI: <span class="aqi">${aqi}</span></p>
+                        <p class="card-text">AQI: <span class="aqi">${data.aqi}</span></p>
+                        <p class="small">PM2.5: <span class="pm25">${data.pm25 ?? 'N/A'}</span></p>
+                        <p class="small">CO: <span class="co">${data.co ?? 'N/A'}</span></p>
+                        <p class="small">NO2: <span class="no2">${data.no2 ?? 'N/A'}</span></p>
                         <canvas data-city="${city}"></canvas>
                     </div>
                 </div>`;
             container.appendChild(col);
             card = col.querySelector('.card');
+            card.addEventListener('click', () => openDetail(city));
+            highlightCard(col);
+            card.scrollIntoView({ behavior: 'smooth' });
         } else {
-            card.querySelector('.aqi').textContent = aqi;
+            card.querySelector('.aqi').textContent = data.aqi;
+            card.querySelector('.pm25').textContent = data.pm25 ?? 'N/A';
+            card.querySelector('.co').textContent = data.co ?? 'N/A';
+            card.querySelector('.no2').textContent = data.no2 ?? 'N/A';
+            highlightCard(card.parentElement);
         }
+        fetchCityHistory(city);
+    }
+
+    function highlightCard(element) {
+        element.classList.add('highlight');
+        setTimeout(() => element.classList.remove('highlight'), 2000);
+    }
+
+    function updatePieChart(city, history) {
+        const counts = { good: 0, moderate: 0, bad: 0 };
+        history.forEach(h => {
+            if (h.aqi <= 50) counts.good++; else if (h.aqi <= 100) counts.moderate++; else counts.bad++;
+        });
+        const ctx = document.querySelector(`canvas[data-pie="${city}"]`).getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Good', 'Moderate', 'Bad'],
+                datasets: [{
+                    data: [counts.good, counts.moderate, counts.bad],
+                    backgroundColor: ['green', 'yellow', 'red']
+                }]
+            }
+        });
+        const advice = document.querySelector('#advice');
+        let text = 'Nice! Your area is not polluted.';
+        if (counts.bad > counts.moderate && counts.bad > counts.good) text = 'Your air quality is poor! Stay indoors or wear a mask!';
+        else if (counts.moderate >= counts.good && counts.moderate >= counts.bad) text = 'Consider public transport to help the environment.';
+        typeAdvice(text);
+    }
+
+    function typeAdvice(text) {
+        const el = document.querySelector('#advice');
+        if (!el) return;
+        el.textContent = '';
+        let i = 0;
+        const interval = setInterval(() => {
+            el.textContent += text[i];
+            i++;
+            if (i >= text.length) clearInterval(interval);
+        }, 50);
+    }
+
+    function openDetail(city) {
+        const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+        const title = document.getElementById('detailModalLabel');
+        const content = document.getElementById('detail-content');
+        title.textContent = city;
+        content.innerHTML = `
+            <canvas data-pie="${city}"></canvas>
+            <p id="advice" class="mt-3"></p>
+        `;
+        fetchCityHistory(city);
+        modal.show();
     }
 
     searchInput.addEventListener('input', () => {

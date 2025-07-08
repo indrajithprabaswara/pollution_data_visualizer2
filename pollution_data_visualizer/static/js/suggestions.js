@@ -8,7 +8,25 @@ const popularCities = [
   'San Antonio',
   'San Diego',
   'Dallas',
-  'San Jose'
+  'San Jose',
+  'London',
+  'Paris',
+  'Tokyo',
+  'Beijing',
+  'Delhi',
+  'Sydney',
+  'Toronto',
+  'Vancouver',
+  'Mexico City',
+  'Berlin',
+  'Madrid',
+  'Rome',
+  'Mumbai',
+  'Seoul',
+  'Singapore',
+  'Bangkok',
+  'Istanbul',
+  'Moscow'
 ];
 
 function showSuggestions(input, container) {

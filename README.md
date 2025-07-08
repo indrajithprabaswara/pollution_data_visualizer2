@@ -1,13 +1,15 @@
 # Pollution Data Visualizer
 
 This project is a simple Flask web application that collects air quality data from the AQICN API and visualizes it.
-It provides a responsive interface with dark and light themes, search suggestions, and historical AQI charts.
+It provides a responsive interface with dark and light themes, global search suggestions, and interactive AQI charts. City cards highlight when added and can be expanded for detailed metrics and advice.
 
 ## Features
 - Search for a city to retrieve its latest Air Quality Index (AQI).
+- View additional metrics such as PM2.5, CO and NO2.
 - Store historical AQI data in a local SQLite database.
 - REST endpoints to fetch real-time, historical and average AQI values.
 - About page and summary API endpoint.
+- Interactive modal with pie charts and pollution advice.
 - Basic unit tests for the data collector and application routes.
 
 ## Setup

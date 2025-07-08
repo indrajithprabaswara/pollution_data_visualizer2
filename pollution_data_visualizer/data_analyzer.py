@@ -28,6 +28,12 @@ def get_aqi_history(city, hours=24):
         .all()
     )
     return [
-        {"timestamp": record.timestamp.isoformat(), "aqi": record.aqi}
+        {
+            "timestamp": record.timestamp.isoformat(),
+            "aqi": record.aqi,
+            "pm25": record.pm25,
+            "co": record.co,
+            "no2": record.no2,
+        }
         for record in records
     ]
