@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         history.forEach(h => {
             if (h.aqi <= 50) counts.good++; else if (h.aqi <= 100) counts.moderate++; else counts.bad++;
         });
+        const total = counts.good + counts.moderate + counts.bad;
         const ctx = document.querySelector(`canvas[data-pie="${city}"]`).getContext('2d');
         new Chart(ctx, {
             type: 'pie',
@@ -108,6 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }]
             }
         });
+        document.getElementById('bar-good').style.width = `${(counts.good/total)*100}%`;
+        document.getElementById('bar-moderate').style.width = `${(counts.moderate/total)*100}%`;
+        document.getElementById('bar-bad').style.width = `${(counts.bad/total)*100}%`;
         const advice = document.querySelector('#advice');
         let text = 'Nice! Your area is not polluted.';
         if (counts.bad > counts.moderate && counts.bad > counts.good) text = 'Your air quality is poor! Stay indoors or wear a mask!';
@@ -127,17 +131,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 50);
     }
 
+    let detailDrawer;
     function openDetail(city) {
-        const modal = new bootstrap.Modal(document.getElementById('detailModal'));
-        const title = document.getElementById('detailModalLabel');
+        if (!detailDrawer) {
+            detailDrawer = new bootstrap.Offcanvas('#detailDrawer');
+        }
+        const title = document.getElementById('detailTitle');
         const content = document.getElementById('detail-content');
         title.textContent = city;
         content.innerHTML = `
             <canvas data-pie="${city}"></canvas>
-            <p id="advice" class="mt-3"></p>
+            <div class="progress mt-3">
+              <div class="progress-bar bg-success" role="progressbar" id="bar-good" style="width:0%"></div>
+            </div>
+            <div class="progress mt-2">
+              <div class="progress-bar bg-warning" role="progressbar" id="bar-moderate" style="width:0%"></div>
+            </div>
+            <div class="progress mt-2">
+              <div class="progress-bar bg-danger" role="progressbar" id="bar-bad" style="width:0%"></div>
+            </div>
+            <p id="advice" class="mt-3 neon-text"></p>
         `;
         fetchCityHistory(city);
-        modal.show();
+        detailDrawer.show();
     }
 
     searchInput.addEventListener('input', () => {
@@ -159,5 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('theme', light ? 'light' : 'dark');
     });
 
-    cities.forEach(fetchCityData);
+    cities.forEach(city => {
+        fetchCityData(city);
+        setInterval(() => fetchCityData(city), 60000);
+    });
 });

@@ -14,16 +14,12 @@
     <div id="cities" class="row"></div>
 </div>
 
-<!-- Detail Modal -->
-<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="detailModalLabel"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" id="detail-content"></div>
-    </div>
+<!-- Detail Drawer -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="detailDrawer" aria-hidden="true">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="detailTitle"></h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
+  <div class="offcanvas-body" id="detail-content"></div>
 </div>
 {% endblock %}

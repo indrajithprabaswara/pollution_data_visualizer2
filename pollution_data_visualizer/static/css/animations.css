@@ -14,6 +14,10 @@
 }
 
 @keyframes highlight {
-  from { background-color: yellow; }
-  to { background-color: transparent; }
+  from {
+    box-shadow: 0 0 20px 5px rgba(255, 255, 0, 0.8);
+  }
+  to {
+    box-shadow: none;
+  }
 }
