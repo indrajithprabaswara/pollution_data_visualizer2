@@ -9,8 +9,10 @@ It provides a responsive interface with dark and light themes, global search sug
 - Store historical AQI data in a local SQLite database.
 - REST endpoints to fetch real-time, historical and average AQI values.
 - About page and summary API endpoint.
-- Interactive modal with pie charts and pollution advice.
+- Offcanvas drawer showing detailed charts, progress bars and pollution advice.
+- Global city suggestions when searching.
 - Basic unit tests for the data collector and application routes.
+- Automatic data refresh every minute for displayed cities.
 
 ## Setup
 1. Install dependencies:

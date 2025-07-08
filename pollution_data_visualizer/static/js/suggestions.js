@@ -26,7 +26,31 @@ const popularCities = [
   'Singapore',
   'Bangkok',
   'Istanbul',
-  'Moscow'
+  'Moscow',
+  'Buenos Aires',
+  'Johannesburg',
+  'Cairo',
+  'Lagos',
+  'Nairobi',
+  'Cape Town',
+  'Dubai',
+  'Abu Dhabi',
+  'Riyadh',
+  'Jeddah',
+  'Karachi',
+  'Lahore',
+  'Jakarta',
+  'Manila',
+  'Ho Chi Minh City',
+  'Kuala Lumpur',
+  'Bangladesh',
+  'Hong Kong',
+  'Taipei',
+  'Shenzhen',
+  'Guangzhou',
+  'Melbourne',
+  'Brisbane',
+  'Perth'
 ];
 
 function showSuggestions(input, container) {
