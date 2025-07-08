@@ -12,10 +12,20 @@ class TestDataCollector(unittest.TestCase):
     def test_fetch_air_quality(self, mock_get):
         mock_get.return_value.json.return_value = {
             'status': 'ok',
-            'data': {'aqi': 42}
+            'data': {
+                'aqi': 42,
+                'iaqi': {
+                    'pm25': {'v': 10},
+                    'co': {'v': 0.5},
+                    'no2': {'v': 15}
+                }
+            }
         }
-        aqi, timestamp = fetch_air_quality('TestCity')
+        aqi, pm25, co, no2, timestamp = fetch_air_quality('TestCity')
         self.assertEqual(aqi, 42)
+        self.assertEqual(pm25, 10)
+        self.assertEqual(co, 0.5)
+        self.assertEqual(no2, 15)
         self.assertIsNotNone(timestamp)
 
 if __name__ == '__main__':

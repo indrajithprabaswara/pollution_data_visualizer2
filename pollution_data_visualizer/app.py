@@ -30,8 +30,11 @@ def about():
 def get_city_data(city):
     try:
         collect_data(city)  # Collect the latest data
-        recent_aqi = get_recent_aqi(city)
-        return jsonify({"city": city, "aqi": recent_aqi})
+        history = get_aqi_history(city, hours=1)
+        if not history:
+            return jsonify({"error": "No data"}), 404
+        latest = history[-1]
+        return jsonify(latest)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
