@@ -107,7 +107,7 @@ canvas {
 
 /* Offcanvas detail drawer occupies half the screen */
 #detailDrawer {
-    width: 80% !important;
+    width: 50% !important;
     max-width: none;
 }
 
