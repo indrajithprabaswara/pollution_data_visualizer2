@@ -46,7 +46,7 @@ def scheduled_collection():
                 collect_data(city)
                 history = get_aqi_history(city, hours=1)
                 if history:
-                    socketio.emit('update', {'city': city, **history[-1]}, broadcast=True)
+                    socketio.emit('update', {'city': city, **history[-1]})
                     publish_event('aqi_collected', {'city': city, 'aqi': history[-1]['aqi']})
             except Exception as e:
                 app.logger.warning("Failed to collect data for %s: %s", city, e)
@@ -137,7 +137,7 @@ def search():
             monitored_cities.append(city)
         history = get_aqi_history(city, hours=1)
         if history:
-            socketio.emit('update', {'city': city, **history[-1]}, broadcast=True)
+            socketio.emit('update', {'city': city, **history[-1]})
         publish_event('search_city', {'city': city})
         recent_aqi = get_recent_aqi(city)
         return render_template('index.html', city=city, aqi=recent_aqi)
