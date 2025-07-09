@@ -31,5 +31,9 @@ class TestApp(unittest.TestCase):
         response = self.app.get('/api/favorites')
         self.assertEqual(response.status_code, 401)
 
+    def test_metrics_endpoint(self):
+        response = self.app.get('/metrics')
+        self.assertEqual(response.status_code, 200)
+
 if __name__ == '__main__':
     unittest.main()

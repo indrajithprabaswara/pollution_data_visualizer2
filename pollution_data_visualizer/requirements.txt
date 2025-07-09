@@ -6,3 +6,6 @@ psycopg2==2.9.3
 SQLAlchemy<2.0
 APScheduler==3.9.1
 flask_socketio==5.3.6
+
+prometheus-client==0.17.1
+
