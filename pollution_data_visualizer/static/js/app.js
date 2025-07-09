@@ -336,17 +336,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initAutocomplete('#search-input');
 
+    async function submitSearch() {
+        const city = searchInput.value.trim();
+        if (!city) return;
+        searchInput.disabled = true;
+        showLoading(city);
+        try {
+            await fetchCityData(city, true);
+        } finally {
+            hideLoading();
+            searchInput.disabled = false;
+            searchInput.value = '';
+        }
+    }
+
     searchForm.addEventListener('submit', e => {
         e.preventDefault();
-        const city = searchInput.value.trim();
-        if (city) {
-            searchInput.disabled = true;
-            showLoading(city);
-            fetchCityData(city, true).finally(() => {
-                hideLoading();
-                searchInput.disabled = false;
-            });
-            searchInput.value = '';
+        submitSearch();
+    });
+
+    searchInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            submitSearch();
         }
     });
 
