@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (scroll) {
                 card.scrollIntoView({ behavior: 'smooth' });
-                showToast('Done!', 'success', 4000);
+                showToast(`Done! See the pollution levels for ${city}`, 'success', 4000);
             }
         } else {
             card.querySelector('.aqi').textContent = data.aqi;
@@ -349,9 +349,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!city) return;
         searchInput.disabled = true;
         showLoading(city);
+        const enableTimer = setTimeout(() => {
+            searchInput.disabled = false;
+        }, 12000);
         try {
             await fetchCityData(city, true);
         } finally {
+            clearTimeout(enableTimer);
             hideLoading();
             searchInput.disabled = false;
             searchInput.value = '';
