@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderCityCard(city, data, scroll) {
+        const slug = city.toLowerCase().replace(/\s+/g, '');
         let card = document.querySelector(`[data-card="${city}"]`);
         if (!card) {
             const col = document.createElement('div');
@@ -162,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="small">PM2.5: <span class="pm25">${data.pm25 ?? 'N/A'}</span></p>
                         <p class="small">CO: <span class="co">${data.co ?? 'N/A'}</span></p>
                         <p class="small">NO2: <span class="no2">${data.no2 ?? 'N/A'}</span></p>
+                        <div id="widget-${slug}" class="mb-2"></div>
                         <canvas data-city="${city}"></canvas>
                     </div>
                 </div>`;
@@ -180,6 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (scroll) {
                 card.scrollIntoView({ behavior: 'smooth' });
                 showToast(`Done! See the pollution levels for ${city}`, 'success', 4000);
+            }
+            if (typeof _aqiFeed === 'function') {
+                _aqiFeed({ container: `widget-${slug}`, city: slug });
             }
         } else {
             card.querySelector('.aqi').textContent = data.aqi;
