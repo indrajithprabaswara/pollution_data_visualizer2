@@ -17,6 +17,7 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
 - Tailwind CSS styling with gradient hero section and animated typewriter heading.
 - Animated line and pie charts that update smoothly with a toggle to switch chart type.
 - Real-time updates using WebSockets so cards refresh automatically.
+- Embedded AQI widgets from WAQI display live readings on each city card.
 - Interactive world map shows cities with markers.
 - Autocomplete search with jQuery UI.
 - Color-coded map markers based on AQI levels.
