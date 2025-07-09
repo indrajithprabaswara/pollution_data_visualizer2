@@ -184,6 +184,15 @@ def api_coords(city):
         pass
     return jsonify({'error': 'Unknown city'}), 404
 
+# Return all known coordinates
+@app.route('/api/all_coords')
+def api_all_coords():
+    import json, os
+    path = os.path.join(os.path.dirname(__file__), 'city_coords.json')
+    with open(path) as f:
+        coords = json.load(f)
+    return jsonify(coords)
+
 # Expose metrics for monitoring
 @app.route('/metrics')
 def metrics():

@@ -465,6 +465,20 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchCoords(data.city, data.aqi);
     });
 
+    function initMarkers() {
+        fetch('/api/all_coords')
+            .then(r => r.json())
+            .then(coordMap => {
+                cities.forEach(city => {
+                    const coords = coordMap[city];
+                    if (coords && !markers[city]) {
+                        markers[city] = L.circleMarker([coords[0], coords[1]], {color: markerColor(null)}).addTo(map).bindPopup(`${city} AQI: N/A`);
+                        markers[city].on('click', () => openDetail(city));
+                    }
+                });
+            });
+    }
+
     function fetchCoords(city, aqi) {
         fetch(`/api/coords/${encodeURIComponent(city)}`)
             .then(r => r.json())
@@ -480,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
+    initMarkers();
     cities.forEach(city => {
         fetchCoords(city, null);
         fetchCityData(city, false);
