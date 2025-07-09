@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const markers = {};
     let loadingToast = null;
 
-    function showToast(message, type='info', delay=4000) {
+    function showToast(message, type='info', delay=4000, autohide=true) {
         const container = document.getElementById('toast-container');
         const div = document.createElement('div');
         div.className = `toast align-items-center text-bg-${type} border-0`;
@@ -26,14 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
         div.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div>` +
             `<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
         container.appendChild(div);
-        const toast = new bootstrap.Toast(div, { delay: delay });
+        const toast = new bootstrap.Toast(div, { delay: delay, autohide: autohide });
         toast.show();
         div.addEventListener('hidden.bs.toast', () => div.remove());
         return toast;
     }
 
     function showLoading(city) {
-        loadingToast = showToast('Adding ' + city + '... please wait', 'secondary', false);
+        loadingToast = showToast('Adding ' + city + '... please wait', 'secondary', 5000, false);
     }
 
     function hideLoading() {
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
 
-    function fetchWithTimeout(url, options = {}, timeout = 10000) {
+    function fetchWithTimeout(url, options = {}, timeout = 8000) {
         return Promise.race([
             fetch(url, options),
             new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
@@ -347,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function submitSearch() {
         const city = searchInput.value.trim();
         if (!city) return;
+        if (searchInput.disabled) return;
         searchInput.disabled = true;
         showLoading(city);
         const enableTimer = setTimeout(() => {
