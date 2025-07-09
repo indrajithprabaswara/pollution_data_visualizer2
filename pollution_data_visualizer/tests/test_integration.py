@@ -40,5 +40,30 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(second.status_code, 200)
         self.assertEqual(mock_fetch.call_count, 1)
 
+    @patch('data_collector.fetch_air_quality')
+    def test_persistence(self, mock_fetch):
+        from datetime import datetime, timedelta
+        from unittest.mock import patch as p
+        import data_collector
+
+        t = datetime.now()
+        mock_fetch.return_value = (42, 10, 0.5, 15, t)
+
+        def immediate(city):
+            aqi, pm25, co, no2, ts = mock_fetch.return_value
+            data_collector.save_air_quality_data(city, aqi, pm25, co, no2, ts)
+
+        with p('app.collect_data', side_effect=immediate):
+            self.client.get('/data/PersistTown')
+            with app.app_context():
+                first = AirQualityData.query.filter_by(city='PersistTown').count()
+            self.assertEqual(first, 1)
+
+            mock_fetch.return_value = (45, 11, 0.6, 18, t + timedelta(minutes=1))
+            self.client.get('/data/PersistTown')
+            with app.app_context():
+                second = AirQualityData.query.filter_by(city='PersistTown').count()
+            self.assertEqual(second, 2)
+
 if __name__ == '__main__':
     unittest.main()
