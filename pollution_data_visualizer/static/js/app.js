@@ -472,6 +472,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cities.forEach(city => {
         fetchCityData(city, false);
-        setInterval(() => fetchCityData(city), 60000);
+        setInterval(() => fetchCityData(city), 1800000);
     });
 });

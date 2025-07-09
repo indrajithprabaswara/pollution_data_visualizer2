@@ -30,5 +30,15 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0]['aqi'], 50)
 
+    @patch('data_collector.fetch_air_quality')
+    def test_caching(self, mock_fetch):
+        from datetime import datetime
+        mock_fetch.return_value = (60, 11, 0.3, 12, datetime.now())
+        first = self.client.get('/data/CachedCity')
+        self.assertEqual(first.status_code, 200)
+        second = self.client.get('/data/CachedCity')
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(mock_fetch.call_count, 1)
+
 if __name__ == '__main__':
     unittest.main()
