@@ -43,3 +43,5 @@ jobs:
         run: npm install
       - name: Run JS tests
         run: npm test --silent
+      - name: Build Docker image
+        run: docker build -t pollution-app -f pollution_data_visualizer/Dockerfile pollution_data_visualizer

@@ -1,7 +1,9 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 from flask_socketio import SocketIO
+from prometheus_client import Counter, Gauge, generate_latest
+from events import publish_event, start_consumer
 from config import Config
-from models import db
+from models import db, AirQualityData
 from data_collector import collect_data, collect_data_for_multiple_cities
 from data_analyzer import get_average_aqi, get_recent_aqi, get_aqi_history
 from models import User, FavoriteCity
@@ -16,6 +18,25 @@ app.config.from_object(Config)
 db.init_app(app)
 socketio = SocketIO(app, async_mode='threading')
 
+# Prometheus metrics
+REQUEST_COUNT = Counter('request_count', 'Total HTTP requests', ['method', 'endpoint'])
+AQI_GAUGE = Gauge('stored_aqi_records', 'Number of AQI records in the database')
+
+# simple event consumer logs events
+def _log_event(event):
+    app.logger.info('event: %s', event)
+
+start_consumer(_log_event)
+
+@app.before_request
+def before_request_func():
+    REQUEST_COUNT.labels(request.method, request.path).inc()
+
+@app.after_request
+def after_request_func(response):
+    AQI_GAUGE.set(AirQualityData.query.count())
+    return response
+
 scheduler = BackgroundScheduler()
 
 def scheduled_collection():
@@ -26,6 +47,7 @@ def scheduled_collection():
                 history = get_aqi_history(city, hours=1)
                 if history:
                     socketio.emit('update', {'city': city, **history[-1]}, broadcast=True)
+                    publish_event('aqi_collected', {'city': city, 'aqi': history[-1]['aqi']})
             except Exception as e:
                 app.logger.warning("Failed to collect data for %s: %s", city, e)
 
@@ -161,6 +183,7 @@ def search():
         history = get_aqi_history(city, hours=1)
         if history:
             socketio.emit('update', {'city': city, **history[-1]}, broadcast=True)
+        publish_event('search_city', {'city': city})
         recent_aqi = get_recent_aqi(city)
         return render_template('index.html', city=city, aqi=recent_aqi)
     return render_template('index.html', error="City not found!")
@@ -193,6 +216,11 @@ def api_coords(city):
     if city in coords:
         return jsonify({'lat': coords[city][0], 'lon': coords[city][1]})
     return jsonify({'error': 'Unknown city'}), 404
+
+# Expose metrics for monitoring
+@app.route('/metrics')
+def metrics():
+    return generate_latest(), 200, {'Content-Type': 'text/plain'}
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)

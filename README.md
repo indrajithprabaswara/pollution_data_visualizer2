@@ -23,6 +23,8 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
 - Save favorite cities with custom AQI alerts.
 - Compare multiple cities with a side-by-side chart.
 - Login support with saved favorites stored server-side.
+- Prometheus `/metrics` endpoint for monitoring.
+- Simple internal event queue used for background notifications.
 
 ## Setup
 1. Install dependencies:
@@ -35,6 +37,12 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
    ```
 The application will be available at `http://localhost:5000`.
 Navigate to `/about` for project information. Use `/api/summary` to fetch average AQI for several cities.
+Metrics are exposed at `/metrics` for Prometheus scraping.
+
+For production, you can start the app with Gunicorn:
+```bash
+gunicorn -w 4 -k eventlet -b 0.0.0.0:8000 wsgi:app
+```
 
 ## Running Tests
 Use pytest to run the test suite:
