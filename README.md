@@ -7,7 +7,7 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
 - Search for a city to retrieve its latest Air Quality Index (AQI).
 - View additional metrics such as PM2.5, CO and NO2.
 - Store historical AQI data in a local SQLite database.
-- REST endpoints to fetch real-time, historical and average AQI values. Use `/data/history/<city>?hours=48` to specify the time range.
+- REST endpoints to fetch real-time, historical and average AQI values. Use `/data/history/<city>?hours=48` or `/data/history_multi?city=A&city=B` for comparisons.
 - About page and summary API endpoint.
 - Offcanvas drawer showing detailed charts, progress bars and pollution advice.
 - Global city suggestions when searching.
@@ -19,6 +19,9 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
 - Real-time updates using WebSockets so cards refresh automatically.
 - Interactive world map shows cities with markers.
 - Autocomplete search with jQuery UI.
+- Color-coded map markers based on AQI levels.
+- Save favorite cities with custom AQI alerts.
+- Compare multiple cities with a side-by-side chart.
 
 ## Setup
 1. Install dependencies:

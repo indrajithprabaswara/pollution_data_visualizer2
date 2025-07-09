@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
     const toggle = document.getElementById('theme-toggle');
+    const compareBtn = document.getElementById('compareBtn');
+    const savedCities = JSON.parse(localStorage.getItem('savedCities') || '[]');
+    const alerts = JSON.parse(localStorage.getItem('alerts') || '{}');
     let chartType = 'line';
     let detailChart = null;
     let currentCity = '';
@@ -24,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyTheme(localStorage.getItem('theme'));
 
+    savedCities.forEach(c => fetchCityData(c));
+
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
 
@@ -36,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 renderCityCard(city, data);
+                fetchCoords(city, data.aqi);
             })
             .catch(err => console.error(err));
     }
@@ -105,7 +111,13 @@ document.addEventListener('DOMContentLoaded', () => {
             col.innerHTML = `
                 <div class="card" data-card="${city}">
                     <div class="card-body">
-                        <h5 class="card-title">${city}</h5>
+                        <div class="d-flex justify-content-between align-items-start">
+                          <h5 class="card-title">${city}</h5>
+                          <div>
+                            <input class="form-check-input compare-check" type="checkbox" data-city="${city}">
+                            <button class="btn btn-sm btn-outline-primary ms-2 save-btn" data-city="${city}">Save</button>
+                          </div>
+                        </div>
                         <p class="card-text">AQI: <span class="aqi">${data.aqi}</span></p>
                         <p class="small">PM2.5: <span class="pm25">${data.pm25 ?? 'N/A'}</span></p>
                         <p class="small">CO: <span class="co">${data.co ?? 'N/A'}</span></p>
@@ -116,7 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
             container.appendChild(col);
             card = col.querySelector('.card');
             card.addEventListener('click', () => openDetail(city));
+            col.querySelector('.save-btn').addEventListener('click', e => {
+                e.stopPropagation();
+                saveCity(city);
+            });
             highlightCard(col);
+            if (alerts[city] && data.aqi >= alerts[city]) {
+                alert(city + ' AQI exceeds ' + alerts[city]);
+                col.querySelector('.card').classList.add('neon-warning');
+            }
             card.scrollIntoView({ behavior: 'smooth' });
         } else {
             card.querySelector('.aqi').textContent = data.aqi;
@@ -124,6 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
             card.querySelector('.co').textContent = data.co ?? 'N/A';
             card.querySelector('.no2').textContent = data.no2 ?? 'N/A';
             highlightCard(card.parentElement);
+            if (alerts[city] && data.aqi >= alerts[city]) {
+                card.classList.add('neon-warning');
+            } else {
+                card.classList.remove('neon-warning');
+            }
         }
         fetchCityHistory(city, 24);
     }
@@ -193,6 +218,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function categorize(value, obj, good, moderate) {
         if (value == null) return;
         if (value <= good) obj.good++; else if (value <= moderate) obj.moderate++; else obj.bad++;
+    }
+
+    function saveCity(city) {
+        if (!savedCities.includes(city)) {
+            savedCities.push(city);
+            localStorage.setItem('savedCities', JSON.stringify(savedCities));
+        }
+        const current = alerts[city] || 150;
+        const val = prompt('Alert threshold for ' + city, current);
+        if (val) {
+            alerts[city] = parseInt(val, 10);
+            localStorage.setItem('alerts', JSON.stringify(alerts));
+        }
+    }
+
+    function markerColor(aqi) {
+        if (aqi <= 50) return 'green';
+        if (aqi <= 100) return 'yellow';
+        return 'red';
     }
 
     function animateValue(el, to, duration) {
@@ -282,20 +326,44 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('See more tips on reducing exposure to air pollution.');
     });
 
+    if (compareBtn) {
+        compareBtn.addEventListener('click', () => {
+            const selected = Array.from(document.querySelectorAll('.compare-check:checked')).map(c => c.dataset.city);
+            if (selected.length < 2) { alert('Select at least two cities'); return; }
+            const params = selected.map(c => 'city=' + encodeURIComponent(c)).join('&');
+            fetch(`/data/history_multi?${params}&hours=24`)
+                .then(r => r.json())
+                .then(data => {
+                    const labels = data[selected[0]].map(h => new Date(h.timestamp).toLocaleTimeString());
+                    const datasets = selected.map((city,i) => ({
+                        label: city,
+                        data: data[city].map(h => h.aqi),
+                        borderColor: ['red','blue','green','orange','purple'][i%5],
+                        fill:false
+                    }));
+                    const ctx = document.getElementById('compareChart').getContext('2d');
+                    if (window.compareChart) window.compareChart.destroy();
+                    window.compareChart = new Chart(ctx,{type:'line',data:{labels,datasets},options:{responsive:true}});
+                    new bootstrap.Modal(document.getElementById('compareModal')).show();
+                });
+        });
+    }
+
     socket.on('update', data => {
         renderCityCard(data.city, data);
-        fetchCoords(data.city);
+        fetchCoords(data.city, data.aqi);
     });
 
-    function fetchCoords(city) {
+    function fetchCoords(city, aqi) {
         fetch(`/api/coords/${encodeURIComponent(city)}`)
             .then(r => r.json())
             .then(coords => {
                 if (coords.error) return;
                 if (markers[city]) {
                     markers[city].setLatLng([coords.lat, coords.lon]);
+                    markers[city].setStyle({color: markerColor(aqi)}).bindPopup(`${city} AQI: ${aqi}`);
                 } else {
-                    markers[city] = L.marker([coords.lat, coords.lon]).addTo(map).bindPopup(city);
+                    markers[city] = L.circleMarker([coords.lat, coords.lon], {color: markerColor(aqi)}).addTo(map).bindPopup(`${city} AQI: ${aqi}`);
                 }
             });
     }

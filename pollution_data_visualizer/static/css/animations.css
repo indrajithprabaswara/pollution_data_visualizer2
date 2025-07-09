@@ -11,6 +11,7 @@
 
 .highlight {
   animation: highlight 1s ease-out forwards;
+  border: 2px solid #39ff14;
 }
 
 @keyframes highlight {
