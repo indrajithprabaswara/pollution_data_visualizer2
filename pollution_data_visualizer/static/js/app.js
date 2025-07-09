@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.error) {
                     console.error(data.error);
+                    fetchCoords(city, null);
                     document.getElementById('loading').style.display = 'none';
                     return;
                 }

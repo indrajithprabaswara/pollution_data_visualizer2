@@ -10,5 +10,6 @@ class Config:
     
     # Database Configuration (For Local Testing, PostgreSQL can be hosted on Heroku)
     # Use a lightweight SQLite database by default for easier local setup.
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///pollution.db')
+    db_path = os.path.join(os.path.dirname(__file__), 'pollution.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///' + db_path)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
