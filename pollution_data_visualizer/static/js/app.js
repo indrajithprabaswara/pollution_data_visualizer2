@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(err);
                 document.getElementById('loading').style.display = 'none';
                 showToast('Failed to fetch data for ' + city, 'danger', 4000);
+                fetchCoords(city, null);
             });
     }
 
@@ -479,6 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     cities.forEach(city => {
+        fetchCoords(city, null);
         fetchCityData(city, false);
         setInterval(() => fetchCityData(city), 1800000);
     });
