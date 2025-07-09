@@ -50,3 +50,10 @@ Use pytest to run the test suite:
 PYTHONPATH=. pytest -q
 ```
 
+
+## Continuous Integration and Delivery
+This repository uses GitHub Actions for automated testing and delivery.
+The `ci.yml` workflow runs unit and integration tests for both Python and JavaScript
+and builds the Docker image. The `cd.yml` workflow pushes the built image
+to GitHub Container Registry whenever changes land on the `main` branch.
+
