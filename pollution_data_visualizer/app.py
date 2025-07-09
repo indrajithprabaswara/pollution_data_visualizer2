@@ -39,11 +39,14 @@ def after_request_func(response):
 
 scheduler = BackgroundScheduler()
 
-def scheduled_collection():
+def scheduled_collection(force=False):
     with app.app_context():
         for city in monitored_cities:
             try:
-                collect_data(city)
+                if force:
+                    collect_data(city, max_age_minutes=0)
+                else:
+                    collect_data(city)
                 history = get_aqi_history(city, hours=1)
                 if history:
                     socketio.emit('update', {'city': city, **history[-1]})
@@ -63,7 +66,7 @@ def setup_database():
         db.session.commit()
     scheduler.add_job(scheduled_collection, 'interval', minutes=30, id='aqi_job')
     scheduler.start()
-    scheduled_collection()
+    scheduled_collection(force=True)
 
 @app.route('/')
 def index():
