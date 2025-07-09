@@ -20,9 +20,8 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
 - Interactive world map shows cities with markers.
 - Autocomplete search with jQuery UI.
 - Color-coded map markers based on AQI levels.
-- Save favorite cities with custom AQI alerts.
+- Save favorite cities locally with optional AQI alerts.
 - Compare multiple cities with a side-by-side chart.
-- Login support with saved favorites stored server-side.
 - Prometheus `/metrics` endpoint for monitoring.
 - Simple internal event queue used for background notifications.
 

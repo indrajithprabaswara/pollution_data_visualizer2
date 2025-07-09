@@ -53,16 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyTheme(localStorage.getItem('theme'));
 
-    fetch('/api/favorites')
-        .then(r => r.json())
-        .then(data => {
-            if (!data.error) {
-                savedCities = data.favorites;
-                localStorage.setItem('savedCities', JSON.stringify(savedCities));
-            }
-            savedCities.forEach(c => fetchCityData(c, false));
-        })
-        .catch(() => savedCities.forEach(c => fetchCityData(c, false)));
+    savedCities.forEach(c => fetchCityData(c, false));
 
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
@@ -278,19 +269,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!savedCities.includes(city)) {
             savedCities.push(city);
             localStorage.setItem('savedCities', JSON.stringify(savedCities));
-            fetch('/api/favorites', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ city })
-            });
         } else {
             savedCities = savedCities.filter(c => c !== city);
             localStorage.setItem('savedCities', JSON.stringify(savedCities));
-            fetch('/api/favorites', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ city })
-            });
         }
         const current = alerts[city] || 150;
         const val = prompt('Alert threshold for ' + city, current);
@@ -300,11 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function markerColor(aqi) {
-        if (aqi <= 50) return 'green';
-        if (aqi <= 100) return 'yellow';
-        return 'red';
-    }
 
     function animateValue(el, to, duration) {
         const element = typeof el === 'string' ? document.getElementById(el) : el;

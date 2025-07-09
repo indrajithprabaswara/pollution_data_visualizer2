@@ -27,13 +27,13 @@ class TestApp(unittest.TestCase):
         response = self.app.get('/api/summary?city=TestCity')
         self.assertIn(response.status_code, [200, 400])
 
-    def test_favorites_requires_auth(self):
-        response = self.app.get('/api/favorites')
-        self.assertEqual(response.status_code, 401)
+    def test_history_multi(self):
+        resp = self.app.get('/data/history_multi?city=New%20York&city=Los%20Angeles&hours=1')
+        self.assertIn(resp.status_code, [200, 400])
 
-    def test_profile_requires_login(self):
-        response = self.app.get('/profile')
-        self.assertEqual(response.status_code, 302)
+    def test_profile_page(self):
+        resp = self.app.get('/profile')
+        self.assertEqual(resp.status_code, 200)
 
     def test_coords_endpoint(self):
         response = self.app.get('/api/coords/New%20York')
