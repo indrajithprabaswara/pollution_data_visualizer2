@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let card = document.querySelector(`[data-card="${city}"]`);
         if (!card) {
             const col = document.createElement('div');
-            col.className = 'col-md-4 fade-in';
+            col.className = 'col-sm-6 col-md-4 fade-in';
             col.innerHTML = `
                 <div class="card card-hover" data-card="${city}">
                     <div class="card-body">
@@ -175,8 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             highlightCard(col);
             if (alerts[city] && data.aqi >= alerts[city]) {
-                alert(city + ' AQI exceeds ' + alerts[city]);
                 col.querySelector('.card').classList.add('neon-warning');
+                showToast(`${city} AQI exceeds ${alerts[city]}`, 'warning', 5000);
             }
             if (scroll) {
                 card.scrollIntoView({ behavior: 'smooth' });
@@ -190,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             highlightCard(card.parentElement);
             if (alerts[city] && data.aqi >= alerts[city]) {
                 card.classList.add('neon-warning');
+                showToast(`${city} AQI exceeds ${alerts[city]}`, 'warning', 5000);
             } else {
                 card.classList.remove('neon-warning');
             }
@@ -418,6 +419,31 @@ document.addEventListener('DOMContentLoaded', () => {
                             interaction: { mode: 'index', intersect: false }
                         }
                     });
+
+                    // Build pollutant comparison
+                    const barLabels = ['PM2.5', 'CO', 'NO2'];
+                    const barData = selected.map((city,i) => {
+                        const avgPm = data[city].reduce((s,h)=>s+(h.pm25||0),0)/data[city].length;
+                        const avgCo = data[city].reduce((s,h)=>s+(h.co||0),0)/data[city].length;
+                        const avgNo2 = data[city].reduce((s,h)=>s+(h.no2||0),0)/data[city].length;
+                        return {
+                            label: city,
+                            data: [avgPm, avgCo, avgNo2],
+                            backgroundColor: ['rgba(75,192,192,0.5)','rgba(255,99,132,0.5)','rgba(255,206,86,0.5)'][i%3]
+                        };
+                    });
+                    const ctx2 = document.getElementById('comparePollutantChart').getContext('2d');
+                    if (window.comparePollutantChart) window.comparePollutantChart.destroy();
+                    window.comparePollutantChart = new Chart(ctx2, {
+                        type: 'bar',
+                        data: { labels: barLabels, datasets: barData },
+                        options: {
+                            responsive: true,
+                            animation: { duration: 1000, easing: 'easeOutQuart' },
+                            interaction: { mode: 'index', intersect: false },
+                            scales: { y: { beginAtZero: true } }
+                        }
+                    });
                     new bootstrap.Modal(document.getElementById('compareModal')).show();
                 });
         });
@@ -438,6 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     markers[city].setStyle({color: markerColor(aqi)}).bindPopup(`${city} AQI: ${aqi}`);
                 } else {
                     markers[city] = L.circleMarker([coords.lat, coords.lon], {color: markerColor(aqi)}).addTo(map).bindPopup(`${city} AQI: ${aqi}`);
+                    markers[city].on('click', () => openDetail(city));
                 }
             });
     }

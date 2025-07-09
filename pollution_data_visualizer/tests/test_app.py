@@ -31,6 +31,14 @@ class TestApp(unittest.TestCase):
         response = self.app.get('/api/favorites')
         self.assertEqual(response.status_code, 401)
 
+    def test_profile_requires_login(self):
+        response = self.app.get('/profile')
+        self.assertEqual(response.status_code, 302)
+
+    def test_coords_endpoint(self):
+        response = self.app.get('/api/coords/New%20York')
+        self.assertIn(response.status_code, [200, 404])
+
     def test_metrics_endpoint(self):
         response = self.app.get('/metrics')
         self.assertEqual(response.status_code, 200)
