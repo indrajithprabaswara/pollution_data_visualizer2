@@ -16,6 +16,32 @@ document.addEventListener('DOMContentLoaded', () => {
         maxZoom: 19
     }).addTo(map);
     const markers = {};
+    let loadingToast = null;
+
+    function showToast(message, type='info', delay=4000) {
+        const container = document.getElementById('toast-container');
+        const div = document.createElement('div');
+        div.className = `toast align-items-center text-bg-${type} border-0`;
+        div.role = 'alert';
+        div.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div>` +
+            `<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
+        container.appendChild(div);
+        const toast = new bootstrap.Toast(div, { delay: delay });
+        toast.show();
+        div.addEventListener('hidden.bs.toast', () => div.remove());
+        return toast;
+    }
+
+    function showLoading(city) {
+        loadingToast = showToast('Adding ' + city + '... please wait', 'secondary', false);
+    }
+
+    function hideLoading() {
+        if (loadingToast) {
+            loadingToast.hide();
+            loadingToast = null;
+        }
+    }
 
     function applyTheme(theme) {
         if (theme === 'light') {
@@ -34,16 +60,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 savedCities = data.favorites;
                 localStorage.setItem('savedCities', JSON.stringify(savedCities));
             }
-            savedCities.forEach(c => fetchCityData(c));
+            savedCities.forEach(c => fetchCityData(c, false));
         })
-        .catch(() => savedCities.forEach(c => fetchCityData(c)));
+        .catch(() => savedCities.forEach(c => fetchCityData(c, false)));
 
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
 
-    function fetchCityData(city) {
+    function fetchCityData(city, scroll=false) {
         document.getElementById('loading').style.display = 'inline-block';
-        fetch(`/data/${encodeURIComponent(city)}`)
+        return fetch(`/data/${encodeURIComponent(city)}`)
             .then(r => r.json())
             .then(data => {
                 if (data.error) {
@@ -51,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('loading').style.display = 'none';
                     return;
                 }
-                renderCityCard(city, data);
+                renderCityCard(city, data, scroll);
                 fetchCoords(city, data.aqi);
                 document.getElementById('loading').style.display = 'none';
             })
@@ -118,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function renderCityCard(city, data) {
+    function renderCityCard(city, data, scroll) {
         let card = document.querySelector(`[data-card="${city}"]`);
         if (!card) {
             const col = document.createElement('div');
@@ -152,7 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(city + ' AQI exceeds ' + alerts[city]);
                 col.querySelector('.card').classList.add('neon-warning');
             }
-            card.scrollIntoView({ behavior: 'smooth' });
+            if (scroll) {
+                card.scrollIntoView({ behavior: 'smooth' });
+                showToast('Done!', 'success', 4000);
+            }
         } else {
             card.querySelector('.aqi').textContent = data.aqi;
             card.querySelector('.pm25').textContent = data.pm25 ?? 'N/A';
@@ -287,13 +316,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function typeAdvice(text) {
         const el = document.querySelector('#advice');
         if (!el) return;
-        el.textContent = '';
-        let i = 0;
-        const interval = setInterval(() => {
-            el.textContent += text[i];
-            i++;
-            if (i >= text.length) clearInterval(interval);
-        }, 50);
+        el.textContent = text;
+        el.style.animation = 'none';
+        void el.offsetWidth;
+        el.style.animation = '';
     }
 
     let detailDrawer;
@@ -329,8 +355,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const city = searchInput.value.trim();
         if (city) {
             searchInput.disabled = true;
-            fetchCityData(city);
-            setTimeout(() => { searchInput.disabled = false; }, 1000);
+            showLoading(city);
+            fetchCityData(city, true).finally(() => {
+                hideLoading();
+                searchInput.disabled = false;
+            });
             searchInput.value = '';
         }
     });
@@ -397,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     cities.forEach(city => {
-        fetchCityData(city);
+        fetchCityData(city, false);
         setInterval(() => fetchCityData(city), 60000);
     });
 });
