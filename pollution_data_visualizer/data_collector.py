@@ -1,11 +1,12 @@
 import requests
 from config import Config
+from urllib.parse import quote
 from datetime import datetime, timedelta
 from models import db, AirQualityData
 
 # Function to fetch air quality data from AQICN API
 def fetch_air_quality(city):
-    url = Config.BASE_URL.format(city)
+    url = Config.BASE_URL.format(quote(city))
     response = requests.get(url)
     data = response.json()
 
