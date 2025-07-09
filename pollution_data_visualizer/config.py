@@ -2,7 +2,7 @@ import os
 
 class Config:
     # Use your AQICN API Key
-    API_KEY = 'c08edb637332856d22941f390ab5dcf64062499a'
+    API_KEY = 'da422a944c1edaa853351550b87c87b02b7563ab'
     BASE_URL = 'https://api.waqi.info/feed/{}/?token=' + API_KEY
     
     # Database Configuration (For Local Testing, PostgreSQL can be hosted on Heroku)
