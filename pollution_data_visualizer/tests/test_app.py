@@ -27,5 +27,9 @@ class TestApp(unittest.TestCase):
         response = self.app.get('/api/summary?city=TestCity')
         self.assertIn(response.status_code, [200, 400])
 
+    def test_favorites_requires_auth(self):
+        response = self.app.get('/api/favorites')
+        self.assertEqual(response.status_code, 401)
+
 if __name__ == '__main__':
     unittest.main()

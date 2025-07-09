@@ -22,6 +22,7 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
 - Color-coded map markers based on AQI levels.
 - Save favorite cities with custom AQI alerts.
 - Compare multiple cities with a side-by-side chart.
+- Login support with saved favorites stored server-side.
 
 ## Setup
 1. Install dependencies:

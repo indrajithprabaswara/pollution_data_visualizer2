@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const toggle = document.getElementById('theme-toggle');
     const compareBtn = document.getElementById('compareBtn');
-    const savedCities = JSON.parse(localStorage.getItem('savedCities') || '[]');
+    let savedCities = JSON.parse(localStorage.getItem('savedCities') || '[]');
     const alerts = JSON.parse(localStorage.getItem('alerts') || '{}');
     let chartType = 'line';
     let detailChart = null;
@@ -27,23 +27,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyTheme(localStorage.getItem('theme'));
 
-    savedCities.forEach(c => fetchCityData(c));
+    fetch('/api/favorites')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.error) {
+                savedCities = data.favorites;
+                localStorage.setItem('savedCities', JSON.stringify(savedCities));
+            }
+            savedCities.forEach(c => fetchCityData(c));
+        })
+        .catch(() => savedCities.forEach(c => fetchCityData(c)));
 
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
 
     function fetchCityData(city) {
+        document.getElementById('loading').style.display = 'inline-block';
         fetch(`/data/${encodeURIComponent(city)}`)
             .then(r => r.json())
             .then(data => {
                 if (data.error) {
                     console.error(data.error);
+                    document.getElementById('loading').style.display = 'none';
                     return;
                 }
                 renderCityCard(city, data);
                 fetchCoords(city, data.aqi);
+                document.getElementById('loading').style.display = 'none';
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error(err);
+                document.getElementById('loading').style.display = 'none';
+            });
     }
 
     function fetchCityHistory(city, hrs = 24) {
@@ -224,6 +239,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!savedCities.includes(city)) {
             savedCities.push(city);
             localStorage.setItem('savedCities', JSON.stringify(savedCities));
+            fetch('/api/favorites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ city })
+            });
+        } else {
+            savedCities = savedCities.filter(c => c !== city);
+            localStorage.setItem('savedCities', JSON.stringify(savedCities));
+            fetch('/api/favorites', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ city })
+            });
         }
         const current = alerts[city] || 150;
         const val = prompt('Alert threshold for ' + city, current);
