@@ -1,6 +1,6 @@
 import requests
 from config import Config
-from datetime import datetime
+from datetime import datetime, timedelta
 from models import db, AirQualityData
 
 # Function to fetch air quality data from AQICN API
@@ -34,7 +34,14 @@ def save_air_quality_data(city, aqi, pm25, co, no2, timestamp):
     db.session.commit()
 
 # Function to collect data for a specific city
-def collect_data(city):
+def collect_data(city, max_age_minutes=Config.FETCH_CACHE_MINUTES):
+    latest = (
+        AirQualityData.query.filter_by(city=city)
+        .order_by(AirQualityData.timestamp.desc())
+        .first()
+    )
+    if latest and datetime.now() - latest.timestamp < timedelta(minutes=max_age_minutes):
+        return
     aqi, pm25, co, no2, timestamp = fetch_air_quality(city)
     save_air_quality_data(city, aqi, pm25, co, no2, timestamp)
 

@@ -12,7 +12,7 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
 - Offcanvas drawer showing detailed charts, progress bars and pollution advice.
 - Global city suggestions when searching.
 - Basic unit tests for the data collector and application routes.
-- Automatic data refresh every minute for displayed cities.
+- Automatic data refresh every 30 minutes for displayed cities.
 - Background scheduler stores AQI data every 30 minutes for all monitored cities.
 - Tailwind CSS styling with gradient hero section and animated typewriter heading.
 - Animated line and pie charts that update smoothly with a toggle to switch chart type.
