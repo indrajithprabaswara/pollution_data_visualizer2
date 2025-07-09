@@ -3,11 +3,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('cities');
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
-    const suggestions = document.getElementById('suggestions');
     const toggle = document.getElementById('theme-toggle');
     let chartType = 'line';
     let detailChart = null;
     let currentCity = '';
+    const socket = io();
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
+    const markers = {};
 
     function applyTheme(theme) {
         if (theme === 'light') {
@@ -245,17 +250,16 @@ document.addEventListener('DOMContentLoaded', () => {
         detailDrawer.show();
     }
 
-    searchInput.addEventListener('input', () => {
-        showSuggestions(searchInput, suggestions);
-    });
+    initAutocomplete('#search-input');
 
     searchForm.addEventListener('submit', e => {
         e.preventDefault();
         const city = searchInput.value.trim();
         if (city) {
+            searchInput.disabled = true;
             fetchCityData(city);
+            setTimeout(() => { searchInput.disabled = false; }, 1000);
             searchInput.value = '';
-            suggestions.innerHTML = '';
         }
     });
 
@@ -277,6 +281,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('advice').addEventListener('click', () => {
         alert('See more tips on reducing exposure to air pollution.');
     });
+
+    socket.on('update', data => {
+        renderCityCard(data.city, data);
+        fetchCoords(data.city);
+    });
+
+    function fetchCoords(city) {
+        fetch(`/api/coords/${encodeURIComponent(city)}`)
+            .then(r => r.json())
+            .then(coords => {
+                if (coords.error) return;
+                if (markers[city]) {
+                    markers[city].setLatLng([coords.lat, coords.lon]);
+                } else {
+                    markers[city] = L.marker([coords.lat, coords.lon]).addTo(map).bindPopup(city);
+                }
+            });
+    }
 
     cities.forEach(city => {
         fetchCityData(city);

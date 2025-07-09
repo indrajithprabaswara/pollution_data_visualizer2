@@ -16,6 +16,9 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
 - Background scheduler stores AQI data every 30 minutes for all monitored cities.
 - Tailwind CSS styling with gradient hero section and animated typewriter heading.
 - Animated line and pie charts that update smoothly with a toggle to switch chart type.
+- Real-time updates using WebSockets so cards refresh automatically.
+- Interactive world map shows cities with markers.
+- Autocomplete search with jQuery UI.
 
 ## Setup
 1. Install dependencies:

@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request
+from flask_socketio import SocketIO
 from config import Config
 from models import db
 from data_collector import collect_data, collect_data_for_multiple_cities
@@ -11,6 +12,7 @@ monitored_cities = ['New York', 'Los Angeles', 'San Francisco']
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
+socketio = SocketIO(app, async_mode='threading')
 
 scheduler = BackgroundScheduler()
 
@@ -19,6 +21,9 @@ def scheduled_collection():
         for city in monitored_cities:
             try:
                 collect_data(city)
+                history = get_aqi_history(city, hours=1)
+                if history:
+                    socketio.emit('update', {'city': city, **history[-1]}, broadcast=True)
             except Exception as e:
                 app.logger.warning("Failed to collect data for %s: %s", city, e)
 
@@ -84,6 +89,9 @@ def search():
         collect_data(city)  # Collect new data for the city
         if city not in monitored_cities:
             monitored_cities.append(city)
+        history = get_aqi_history(city, hours=1)
+        if history:
+            socketio.emit('update', {'city': city, **history[-1]}, broadcast=True)
         recent_aqi = get_recent_aqi(city)
         return render_template('index.html', city=city, aqi=recent_aqi)
     return render_template('index.html', error="City not found!")
@@ -106,5 +114,16 @@ def api_summary():
         result[city] = avg
     return jsonify(result)
 
+# Return coordinates for known cities
+@app.route('/api/coords/<city>')
+def api_coords(city):
+    import json, os
+    path = os.path.join(os.path.dirname(__file__), 'city_coords.json')
+    with open(path) as f:
+        coords = json.load(f)
+    if city in coords:
+        return jsonify({'lat': coords[city][0], 'lon': coords[city][1]})
+    return jsonify({'error': 'Unknown city'}), 404
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, debug=True)
