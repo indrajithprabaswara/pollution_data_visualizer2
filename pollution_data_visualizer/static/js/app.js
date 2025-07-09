@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function fetchCityHistory(city, hrs = 24) {
+    function fetchCityHistory(city, hrs = 48) {
         fetch(`/data/history/${encodeURIComponent(city)}?hours=${hrs}`)
             .then(r => r.json())
             .then(history => {
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         options: { responsive: true,
                                    scales: { y: { beginAtZero: true } },
-                                   animation: { duration: 1000 },
+                                   animation: { duration: 1000, easing: 'easeOutQuart' },
                                    interaction: { mode: 'index', intersect: false } }
                     });
                 }
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         options: { responsive: true,
                                    scales: { y: { beginAtZero: true } },
-                                   animation: { duration: 1000 },
+                                   animation: { duration: 1000, easing: 'easeOutQuart' },
                                    interaction: { mode: 'index', intersect: false } }
                     });
                 }
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const col = document.createElement('div');
             col.className = 'col-md-4 fade-in';
             col.innerHTML = `
-                <div class="card" data-card="${city}">
+                <div class="card card-hover" data-card="${city}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">
                           <h5 class="card-title">${city}</h5>
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove('neon-warning');
             }
         }
-        fetchCityHistory(city, 24);
+        fetchCityHistory(city, 48);
     }
 
     function highlightCard(element) {
@@ -218,7 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     backgroundColor: ['green', 'yellow', 'red']
                 }]
             },
-            options: { animation: { animateScale: true, animateRotate: true } }
+            options: {
+                animation: { animateScale: true, animateRotate: true, duration: 1000, easing: 'easeOutQuart' },
+                plugins: { tooltip: { enabled: true } }
+            }
         });
         document.getElementById('bar-good').style.width = `${(counts.good/total)*100}%`;
         document.getElementById('bar-moderate').style.width = `${(counts.moderate/total)*100}%`;
@@ -255,7 +258,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     { label: 'NO2', backgroundColor: 'rgba(255,206,86,0.6)', data: [no2.good, no2.moderate, no2.bad] }
                 ]
             },
-            options: { responsive: true, scales: { y: { beginAtZero: true } }, animation: { duration: 1000 } }
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } },
+                animation: { duration: 1000, easing: 'easeOutQuart' },
+                plugins: { tooltip: { enabled: true } },
+                interaction: { mode: 'index', intersect: false }
+            }
         });
     }
 
@@ -400,7 +409,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     }));
                     const ctx = document.getElementById('compareChart').getContext('2d');
                     if (window.compareChart) window.compareChart.destroy();
-                    window.compareChart = new Chart(ctx,{type:'line',data:{labels,datasets},options:{responsive:true}});
+                    window.compareChart = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels, datasets },
+                        options: {
+                            responsive: true,
+                            animation: { duration: 1000, easing: 'easeOutQuart' },
+                            interaction: { mode: 'index', intersect: false }
+                        }
+                    });
                     new bootstrap.Modal(document.getElementById('compareModal')).show();
                 });
         });
