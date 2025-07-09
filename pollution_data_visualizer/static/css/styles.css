@@ -97,6 +97,10 @@ canvas {
         0 0 20px #ff073a;
 }
 
+.card.neon-warning {
+    box-shadow: 0 0 10px 2px #ff073a;
+}
+
 .progress-bar {
     transition: width 1s ease-in-out;
 }

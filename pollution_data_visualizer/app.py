@@ -71,6 +71,19 @@ def get_city_history(city):
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+# Return history for multiple cities
+@app.route('/data/history_multi')
+def get_history_multi():
+    try:
+        cities = request.args.getlist('city')
+        hours = int(request.args.get('hours', 24))
+        result = {}
+        for city in cities:
+            result[city] = get_aqi_history(city, hours=hours)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 # Route to get the average AQI for a city in the past 7 days
 @app.route('/data/average/<city>')
 def get_average(city):

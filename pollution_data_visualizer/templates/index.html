@@ -12,7 +12,23 @@
 </section>
 <div id="map" class="my-4" style="height:400px;"></div>
 <div class="container mt-4">
+    <button id="compareBtn" class="btn btn-info mb-3 btn-animated">Compare Selected</button>
     <div id="cities" class="row"></div>
+</div>
+
+<!-- Comparison Modal -->
+<div class="modal fade" id="compareModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">City Comparison</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <canvas id="compareChart"></canvas>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Detail Drawer -->
