@@ -172,7 +172,8 @@ def api_coords(city):
     if city in coords:
         return jsonify({'lat': coords[city][0], 'lon': coords[city][1]})
     try:
-        resp = requests.get(Config.BASE_URL.format(city), timeout=10)
+        from urllib.parse import quote
+        resp = requests.get(Config.BASE_URL.format(quote(city)), timeout=10)
         data = resp.json()
         if data.get('status') == 'ok':
             lat, lon = data['data']['city']['geo']
