@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }).addTo(map);
     const markers = {};
     let loadingToast = null;
-    let widgetConfigs = [];
 
     function showToast(message, type='info', delay=4000, autohide=true) {
         const container = document.getElementById('toast-container');
@@ -175,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="small">PM2.5: <span class="pm25">${data.pm25 ?? 'N/A'}</span></p>
                         <p class="small">CO: <span class="co">${data.co ?? 'N/A'}</span></p>
                         <p class="small">NO2: <span class="no2">${data.no2 ?? 'N/A'}</span></p>
-                        <div id="widget-${slug}" class="mb-2"></div>
                         <canvas data-city="${city}"></canvas>
                     </div>
                 </div>`;
@@ -194,10 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (scroll) {
                 card.scrollIntoView({ behavior: 'smooth' });
                 showToast(`Done! See the pollution levels for ${city}`, 'success', 4000);
-            }
-            if (typeof _aqiFeed === 'function') {
-                widgetConfigs.push({ container: `widget-${slug}`, city: slug });
-                _aqiFeed(widgetConfigs, null, widgetConfigs.length - 1);
             }
         } else {
             card.querySelector('.aqi').textContent = data.aqi;
