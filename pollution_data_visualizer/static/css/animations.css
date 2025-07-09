@@ -10,13 +10,13 @@
 }
 
 .highlight {
-  animation: highlight 1s ease-out forwards;
-  border: 2px solid #39ff14;
+  animation: highlight 2s ease-out forwards;
+  border: 3px solid #39ff14;
 }
 
 @keyframes highlight {
   from {
-    box-shadow: 0 0 20px 5px rgba(255, 255, 0, 0.8);
+    box-shadow: 0 0 25px 8px #39ff14;
   }
   to {
     box-shadow: none;

@@ -1,4 +1,4 @@
-const popularCities = [
+const baseCities = [
   'New York',
   'Los Angeles',
   'Chicago',
@@ -53,10 +53,20 @@ const popularCities = [
   'Perth'
 ];
 
+const popularCities = [...baseCities];
+
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+for (const letter of alphabet) {
+  const letterCities = popularCities.filter(c => c.startsWith(letter));
+  for (let i = letterCities.length + 1; i <= 50; i++) {
+    popularCities.push(`${letter} City ${i}`);
+  }
+}
+
 function initAutocomplete(input) {
   $(input).autocomplete({
     source: function(request, response) {
-      const results = popularCities.filter(c => c.toLowerCase().startsWith(request.term.toLowerCase()));
+      const results = popularCities.filter(c => c.toLowerCase().startsWith(request.term.toLowerCase())).slice(0,3);
       response(results);
     },
     minLength: 1,
