@@ -92,17 +92,21 @@ def favorites():
         return jsonify({'error': 'unauthorized'}), 401
     user = User.query.get(session['user_id'])
     if request.method == 'GET':
-        favs = [f.city for f in user.favorites]
+        favs = [{'city': f.city, 'alert': f.alert} for f in user.favorites]
         return jsonify({'favorites': favs})
     data = request.get_json()
     city = data.get('city')
     if not city:
         return jsonify({'error': 'city required'}), 400
+    alert_val = data.get('alert')
     if request.method == 'POST':
-        if not any(f.city == city for f in user.favorites):
-            fav = FavoriteCity(user_id=user.id, city=city)
+        fav = FavoriteCity.query.filter_by(user_id=user.id, city=city).first()
+        if not fav:
+            fav = FavoriteCity(user_id=user.id, city=city, alert=alert_val)
             db.session.add(fav)
-            db.session.commit()
+        else:
+            fav.alert = alert_val
+        db.session.commit()
         return jsonify({'status': 'saved'})
     else:  # DELETE
         FavoriteCity.query.filter_by(user_id=user.id, city=city).delete()
@@ -125,6 +129,21 @@ def about():
     if 'user_id' in session:
         user = User.query.get(session['user_id'])
     return render_template('about.html', user=user)
+
+# User profile page to manage saved cities and alert thresholds
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    if request.method == 'POST':
+        for fav in user.favorites:
+            val = request.form.get(f"alert_{fav.city}")
+            if val:
+                fav.alert = int(val)
+        db.session.commit()
+        return redirect(url_for('profile'))
+    return render_template('profile.html', user=user)
 
 # Route to get real-time data for a specific city
 @app.route('/data/<city>')

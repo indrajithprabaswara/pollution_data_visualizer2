@@ -38,7 +38,8 @@ class TestE2E(unittest.TestCase):
         self.assertEqual(data['status'], 'saved')
         list_resp = self.client.get('/api/favorites')
         self.assertEqual(list_resp.status_code, 200)
-        self.assertIn('DemoCity', list_resp.get_json()['favorites'])
+        cities = [f['city'] for f in list_resp.get_json()['favorites']]
+        self.assertIn('DemoCity', cities)
 
 if __name__ == '__main__':
     unittest.main()
