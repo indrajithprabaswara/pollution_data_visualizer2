@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 
-monitored_cities = ['New York', 'Los Angeles', 'San Francisco', 'Paris', 'Delhi', 'Kolkata']
+monitored_cities = ['New York', 'Los Angeles', 'San Francisco', 'Paris', 'Delhi', 'Perth']
 
 app = Flask(__name__)
 app.config.from_object(Config)
