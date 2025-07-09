@@ -25,6 +25,7 @@ The interface uses Bootstrap together with Tailwind CSS for a modern look. Globa
 - Compare multiple cities with a side-by-side chart.
 - Prometheus `/metrics` endpoint for monitoring.
 - Simple internal event queue used for background notifications.
+- Delhi, Kolkata and Paris are shown by default when the app loads.
 
 ## Setup
 1. Install dependencies:

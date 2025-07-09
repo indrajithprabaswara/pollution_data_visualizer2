@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const cities = ['New York', 'Los Angeles', 'San Francisco'];
+    const cities = ['New York', 'Los Angeles', 'San Francisco', 'Paris', 'Delhi', 'Kolkata'];
     const container = document.getElementById('cities');
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
@@ -232,12 +232,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('bar-moderate').style.width = `${(counts.moderate/total)*100}%`;
         document.getElementById('bar-bad').style.width = `${(counts.bad/total)*100}%`;
         const advice = document.querySelector('#advice');
+        const latest = history[history.length - 1]?.aqi || 0;
         let text = 'Nice! Your area is not polluted.';
         advice.classList.remove('neon-warning');
-        if (counts.bad > counts.moderate && counts.bad > counts.good) {
+        if (latest > 100) {
             text = 'Warning! It\'s highly polluted in your area. It\'s recommended to wear a mask and stay indoors.';
             advice.classList.add('neon-warning');
-        } else if (counts.moderate >= counts.good && counts.moderate >= counts.bad) {
+        } else if (latest > 50) {
             text = 'Pollution is moderate. Consider using public transport to help reduce pollution.';
         }
         typeAdvice(text);

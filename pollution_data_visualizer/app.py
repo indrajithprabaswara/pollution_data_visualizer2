@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 
-monitored_cities = ['New York', 'Los Angeles', 'San Francisco']
+monitored_cities = ['New York', 'Los Angeles', 'San Francisco', 'Paris', 'Delhi', 'Kolkata']
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -165,11 +165,23 @@ def api_summary():
 @app.route('/api/coords/<city>')
 def api_coords(city):
     import json, os
+    import requests
     path = os.path.join(os.path.dirname(__file__), 'city_coords.json')
     with open(path) as f:
         coords = json.load(f)
     if city in coords:
         return jsonify({'lat': coords[city][0], 'lon': coords[city][1]})
+    try:
+        resp = requests.get(Config.BASE_URL.format(city), timeout=10)
+        data = resp.json()
+        if data.get('status') == 'ok':
+            lat, lon = data['data']['city']['geo']
+            coords[city] = [lat, lon]
+            with open(path, 'w') as f:
+                json.dump(coords, f, indent=2)
+            return jsonify({'lat': lat, 'lon': lon})
+    except Exception:
+        pass
     return jsonify({'error': 'Unknown city'}), 404
 
 # Expose metrics for monitoring
