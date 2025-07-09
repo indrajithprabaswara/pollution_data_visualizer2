@@ -53,18 +53,13 @@ const popularCities = [
   'Perth'
 ];
 
-function showSuggestions(input, container) {
-  const value = input.value.toLowerCase();
-  container.innerHTML = '';
-  if (!value) return;
-  popularCities.filter(c => c.toLowerCase().startsWith(value)).forEach(city => {
-    const item = document.createElement('a');
-    item.className = 'list-group-item list-group-item-action';
-    item.textContent = city;
-    item.addEventListener('click', () => {
-      input.value = city;
-      container.innerHTML = '';
-    });
-    container.appendChild(item);
+function initAutocomplete(input) {
+  $(input).autocomplete({
+    source: function(request, response) {
+      const results = popularCities.filter(c => c.toLowerCase().startsWith(request.term.toLowerCase()));
+      response(results);
+    },
+    minLength: 1,
+    delay: 0
   });
 }
