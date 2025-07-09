@@ -29,8 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(err => console.error(err));
     }
 
-    function fetchCityHistory(city) {
-        fetch(`/data/history/${encodeURIComponent(city)}`)
+    function fetchCityHistory(city, hrs = 24) {
+        fetch(`/data/history/${encodeURIComponent(city)}?hours=${hrs}`)
             .then(r => r.json())
             .then(history => {
                 const cardCanvas = document.querySelector(`canvas[data-city="${city}"]`);
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.querySelector('.no2').textContent = data.no2 ?? 'N/A';
             highlightCard(card.parentElement);
         }
-        fetchCityHistory(city);
+        fetchCityHistory(city, 24);
     }
 
     function highlightCard(element) {
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('detail-co').textContent = card.querySelector('.co').textContent;
         document.getElementById('detail-no2').textContent = card.querySelector('.no2').textContent;
 
-        fetchCityHistory(city);
+        fetchCityHistory(city, 168);
         detailDrawer.show();
     }
 

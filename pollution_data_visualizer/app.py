@@ -4,16 +4,34 @@ from models import db
 from data_collector import collect_data, collect_data_for_multiple_cities
 from data_analyzer import get_average_aqi, get_recent_aqi, get_aqi_history
 from datetime import datetime, timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
+
+monitored_cities = ['New York', 'Los Angeles', 'San Francisco']
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
+scheduler = BackgroundScheduler()
+
+def scheduled_collection():
+    with app.app_context():
+        for city in monitored_cities:
+            try:
+                collect_data(city)
+            except Exception as e:
+                app.logger.warning("Failed to collect data for %s: %s", city, e)
+
 
 @app.before_first_request
 def setup_database():
-    """Ensure database tables exist."""
+    """Ensure database tables exist and start scheduler."""
     db.create_all()
+    scheduler.add_job(scheduled_collection, 'interval', minutes=30, id='aqi_job')
+    scheduler.start()
+    scheduled_collection()
+
+
 
 # Route to show the main page with a search bar
 @app.route('/')
@@ -38,11 +56,12 @@ def get_city_data(city):
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-# Route to get AQI history for the last 24 hours
+# Route to get AQI history
 @app.route('/data/history/<city>')
 def get_city_history(city):
     try:
-        history = get_aqi_history(city)
+        hours = int(request.args.get('hours', 24))
+        history = get_aqi_history(city, hours=hours)
         return jsonify(history)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -63,6 +82,8 @@ def search():
     city = request.args.get('city')
     if city:
         collect_data(city)  # Collect new data for the city
+        if city not in monitored_cities:
+            monitored_cities.append(city)
         recent_aqi = get_recent_aqi(city)
         return render_template('index.html', city=city, aqi=recent_aqi)
     return render_template('index.html', error="City not found!")

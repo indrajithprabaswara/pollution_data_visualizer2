@@ -1,5 +1,5 @@
 .fade-in {
-  animation: fadeIn 0.6s ease-in forwards;
+  animation: fadeIn 0.3s ease-in forwards;
   opacity: 0;
 }
 
@@ -10,7 +10,7 @@
 }
 
 .highlight {
-  animation: highlight 2s ease-out forwards;
+  animation: highlight 1s ease-out forwards;
 }
 
 @keyframes highlight {

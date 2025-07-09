@@ -7,12 +7,13 @@ It provides a responsive interface with dark and light themes, global search sug
 - Search for a city to retrieve its latest Air Quality Index (AQI).
 - View additional metrics such as PM2.5, CO and NO2.
 - Store historical AQI data in a local SQLite database.
-- REST endpoints to fetch real-time, historical and average AQI values.
+- REST endpoints to fetch real-time, historical and average AQI values. Use `/data/history/<city>?hours=48` to specify the time range.
 - About page and summary API endpoint.
 - Offcanvas drawer showing detailed charts, progress bars and pollution advice.
 - Global city suggestions when searching.
 - Basic unit tests for the data collector and application routes.
 - Automatic data refresh every minute for displayed cities.
+- Background scheduler stores AQI data every 30 minutes for all monitored cities.
 
 ## Setup
 1. Install dependencies:
