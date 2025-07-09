@@ -1,9 +1,11 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 from flask_socketio import SocketIO
 from config import Config
 from models import db
 from data_collector import collect_data, collect_data_for_multiple_cities
 from data_analyzer import get_average_aqi, get_recent_aqi, get_aqi_history
+from models import User, FavoriteCity
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -32,21 +34,75 @@ def scheduled_collection():
 def setup_database():
     """Ensure database tables exist and start scheduler."""
     db.create_all()
+    if not User.query.first():
+        # create a default user for simplicity
+        user = User(username='demo', password=generate_password_hash('demo'))
+        db.session.add(user)
+        db.session.commit()
     scheduler.add_job(scheduled_collection, 'interval', minutes=30, id='aqi_job')
     scheduler.start()
     scheduled_collection()
 
 
+# Simple user login (username only for demo)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            session['user_id'] = user.id
+            return redirect(url_for('index'))
+        return render_template('login.html', error='Invalid credentials', user=None)
+    return render_template('login.html', user=None)
+
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('index'))
+
+# API for managing favorites
+@app.route('/api/favorites', methods=['GET', 'POST', 'DELETE'])
+def favorites():
+    if 'user_id' not in session:
+        return jsonify({'error': 'unauthorized'}), 401
+    user = User.query.get(session['user_id'])
+    if request.method == 'GET':
+        favs = [f.city for f in user.favorites]
+        return jsonify({'favorites': favs})
+    data = request.get_json()
+    city = data.get('city')
+    if not city:
+        return jsonify({'error': 'city required'}), 400
+    if request.method == 'POST':
+        if not any(f.city == city for f in user.favorites):
+            fav = FavoriteCity(user_id=user.id, city=city)
+            db.session.add(fav)
+            db.session.commit()
+        return jsonify({'status': 'saved'})
+    else:  # DELETE
+        FavoriteCity.query.filter_by(user_id=user.id, city=city).delete()
+        db.session.commit()
+        return jsonify({'status': 'removed'})
+
 
 # Route to show the main page with a search bar
 @app.route('/')
 def index():
-    return render_template('index.html')
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+    return render_template('index.html', user=user)
 
 # Simple about page
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+    return render_template('about.html', user=user)
 
 # Route to get real-time data for a specific city
 @app.route('/data/<city>')
