@@ -39,6 +39,10 @@ class TestApp(unittest.TestCase):
         response = self.app.get('/api/coords/New%20York')
         self.assertIn(response.status_code, [200, 404])
 
+    def test_coords_perth(self):
+        resp = self.app.get('/api/coords/Perth')
+        self.assertIn(resp.status_code, [200, 404])
+
     def test_metrics_endpoint(self):
         response = self.app.get('/metrics')
         self.assertEqual(response.status_code, 200)

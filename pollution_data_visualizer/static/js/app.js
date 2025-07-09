@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const cities = ['New York', 'Los Angeles', 'San Francisco', 'Paris', 'Delhi', 'Kolkata'];
+    const cities = ['New York', 'Los Angeles', 'San Francisco', 'Paris', 'Delhi', 'Perth'];
     const container = document.getElementById('cities');
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).addTo(map);
     const markers = {};
     let loadingToast = null;
+    let widgetConfigs = [];
 
     function showToast(message, type='info', delay=4000, autohide=true) {
         const container = document.getElementById('toast-container');
@@ -184,7 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(`Done! See the pollution levels for ${city}`, 'success', 4000);
             }
             if (typeof _aqiFeed === 'function') {
-                _aqiFeed({ container: `widget-${slug}`, city: slug });
+                widgetConfigs.push({ container: `widget-${slug}`, city: slug });
+                _aqiFeed(widgetConfigs, null, widgetConfigs.length - 1);
             }
         } else {
             card.querySelector('.aqi').textContent = data.aqi;
