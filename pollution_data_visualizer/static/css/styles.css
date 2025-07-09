@@ -73,3 +73,17 @@ canvas {
 .progress-bar {
     transition: width 1s ease-in-out;
 }
+
+/* Offcanvas detail drawer occupies half the screen */
+#detailDrawer {
+    width: 50% !important;
+    max-width: none;
+}
+
+#detailDrawer .offcanvas-body {
+    overflow-y: auto;
+}
+
+.metric-label {
+    font-weight: bold;
+}

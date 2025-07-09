@@ -33,25 +33,47 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`/data/history/${encodeURIComponent(city)}`)
             .then(r => r.json())
             .then(history => {
-                const canvas = document.querySelector(`canvas[data-city="${city}"]`);
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
+                const cardCanvas = document.querySelector(`canvas[data-city="${city}"]`);
                 const labels = history.map(h => new Date(h.timestamp).toLocaleTimeString());
                 const data = history.map(h => h.aqi);
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'AQI',
-                            data: data,
-                            borderColor: 'rgba(75,192,192,1)',
-                            backgroundColor: 'rgba(75,192,192,0.2)',
-                            fill: true
-                        }]
-                    },
-                    options: { responsive: true, scales: { y: { beginAtZero: true } } }
-                });
+
+                if (cardCanvas) {
+                    const ctx = cardCanvas.getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'AQI',
+                                data: data,
+                                borderColor: 'rgba(75,192,192,1)',
+                                backgroundColor: 'rgba(75,192,192,0.2)',
+                                fill: true
+                            }]
+                        },
+                        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                    });
+                }
+
+                const detailCanvas = document.getElementById('historyChart');
+                if (detailCanvas) {
+                    const ctx2 = detailCanvas.getContext('2d');
+                    new Chart(ctx2, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'AQI',
+                                data: data,
+                                borderColor: 'rgba(75,192,192,1)',
+                                backgroundColor: 'rgba(75,192,192,0.2)',
+                                fill: true
+                            }]
+                        },
+                        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                    });
+                }
+
                 updatePieChart(city, history);
             });
     }
@@ -98,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (h.aqi <= 50) counts.good++; else if (h.aqi <= 100) counts.moderate++; else counts.bad++;
         });
         const total = counts.good + counts.moderate + counts.bad;
-        const ctx = document.querySelector(`canvas[data-pie="${city}"]`).getContext('2d');
+        const ctx = document.getElementById('pieChart').getContext('2d');
         new Chart(ctx, {
             type: 'pie',
             data: {
@@ -114,8 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('bar-bad').style.width = `${(counts.bad/total)*100}%`;
         const advice = document.querySelector('#advice');
         let text = 'Nice! Your area is not polluted.';
-        if (counts.bad > counts.moderate && counts.bad > counts.good) text = 'Your air quality is poor! Stay indoors or wear a mask!';
-        else if (counts.moderate >= counts.good && counts.moderate >= counts.bad) text = 'Consider public transport to help the environment.';
+        if (counts.bad > counts.moderate && counts.bad > counts.good) {
+            text = 'Warning! It\'s highly polluted in your area. It\'s recommended to wear a mask and stay indoors.';
+        } else if (counts.moderate >= counts.good && counts.moderate >= counts.bad) {
+            text = 'Pollution is moderate. Consider using public transport to help reduce pollution.';
+        }
         typeAdvice(text);
     }
 
@@ -137,21 +162,14 @@ document.addEventListener('DOMContentLoaded', () => {
             detailDrawer = new bootstrap.Offcanvas('#detailDrawer');
         }
         const title = document.getElementById('detailTitle');
-        const content = document.getElementById('detail-content');
         title.textContent = city;
-        content.innerHTML = `
-            <canvas data-pie="${city}"></canvas>
-            <div class="progress mt-3">
-              <div class="progress-bar bg-success" role="progressbar" id="bar-good" style="width:0%"></div>
-            </div>
-            <div class="progress mt-2">
-              <div class="progress-bar bg-warning" role="progressbar" id="bar-moderate" style="width:0%"></div>
-            </div>
-            <div class="progress mt-2">
-              <div class="progress-bar bg-danger" role="progressbar" id="bar-bad" style="width:0%"></div>
-            </div>
-            <p id="advice" class="mt-3 neon-text"></p>
-        `;
+
+        const card = document.querySelector(`[data-card="${city}"]`);
+        document.getElementById('detail-aqi').textContent = card.querySelector('.aqi').textContent;
+        document.getElementById('detail-pm25').textContent = card.querySelector('.pm25').textContent;
+        document.getElementById('detail-co').textContent = card.querySelector('.co').textContent;
+        document.getElementById('detail-no2').textContent = card.querySelector('.no2').textContent;
+
         fetchCityHistory(city);
         detailDrawer.show();
     }
