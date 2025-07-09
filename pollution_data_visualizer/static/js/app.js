@@ -58,9 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
 
+    function fetchWithTimeout(url, options = {}, timeout = 10000) {
+        return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
+        ]);
+    }
+
     function fetchCityData(city, scroll=false) {
         document.getElementById('loading').style.display = 'inline-block';
-        return fetch(`/data/${encodeURIComponent(city)}`)
+        return fetchWithTimeout(`/data/${encodeURIComponent(city)}`)
             .then(r => r.json())
             .then(data => {
                 if (data.error) {
@@ -75,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(err => {
                 console.error(err);
                 document.getElementById('loading').style.display = 'none';
+                showToast('Failed to fetch data for ' + city, 'danger', 4000);
             });
     }
 
