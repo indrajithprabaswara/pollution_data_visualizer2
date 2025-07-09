@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyTheme(localStorage.getItem('theme'));
 
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
+
     function fetchCityData(city) {
         fetch(`/data/${encodeURIComponent(city)}`)
             .then(r => r.json())
@@ -75,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 updatePieChart(city, history);
+                showPollutantBreakdown(city, history);
             });
     }
 
@@ -136,12 +140,60 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('bar-bad').style.width = `${(counts.bad/total)*100}%`;
         const advice = document.querySelector('#advice');
         let text = 'Nice! Your area is not polluted.';
+        advice.classList.remove('neon-warning');
         if (counts.bad > counts.moderate && counts.bad > counts.good) {
             text = 'Warning! It\'s highly polluted in your area. It\'s recommended to wear a mask and stay indoors.';
+            advice.classList.add('neon-warning');
         } else if (counts.moderate >= counts.good && counts.moderate >= counts.bad) {
             text = 'Pollution is moderate. Consider using public transport to help reduce pollution.';
         }
         typeAdvice(text);
+    }
+
+    function showPollutantBreakdown(city, history) {
+        const pm25 = { good: 0, moderate: 0, bad: 0 };
+        const co = { good: 0, moderate: 0, bad: 0 };
+        const no2 = { good: 0, moderate: 0, bad: 0 };
+        history.forEach(h => {
+            categorize(h.pm25, pm25, 12, 35);
+            categorize(h.co, co, 4, 9);
+            categorize(h.no2, no2, 53, 100);
+        });
+        const ctx = document.getElementById('pollutantChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Good', 'Moderate', 'Bad'],
+                datasets: [
+                    { label: 'PM2.5', backgroundColor: 'rgba(75,192,192,0.6)', data: [pm25.good, pm25.moderate, pm25.bad] },
+                    { label: 'CO', backgroundColor: 'rgba(255,99,132,0.6)', data: [co.good, co.moderate, co.bad] },
+                    { label: 'NO2', backgroundColor: 'rgba(255,206,86,0.6)', data: [no2.good, no2.moderate, no2.bad] }
+                ]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    function categorize(value, obj, good, moderate) {
+        if (value == null) return;
+        if (value <= good) obj.good++; else if (value <= moderate) obj.moderate++; else obj.bad++;
+    }
+
+    function animateValue(el, to, duration) {
+        const element = typeof el === 'string' ? document.getElementById(el) : el;
+        if (!element) return;
+        const start = 0;
+        const increment = to / (duration / 20);
+        let current = start;
+        element.textContent = current.toFixed(0);
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= to) {
+                current = to;
+                clearInterval(timer);
+            }
+            element.textContent = current.toFixed(0);
+        }, 20);
     }
 
     function typeAdvice(text) {
@@ -165,10 +217,17 @@ document.addEventListener('DOMContentLoaded', () => {
         title.textContent = city;
 
         const card = document.querySelector(`[data-card="${city}"]`);
-        document.getElementById('detail-aqi').textContent = card.querySelector('.aqi').textContent;
-        document.getElementById('detail-pm25').textContent = card.querySelector('.pm25').textContent;
-        document.getElementById('detail-co').textContent = card.querySelector('.co').textContent;
-        document.getElementById('detail-no2').textContent = card.querySelector('.no2').textContent;
+        animateValue('detail-aqi', parseFloat(card.querySelector('.aqi').textContent), 800);
+        animateValue('detail-pm25', parseFloat(card.querySelector('.pm25').textContent) || 0, 800);
+        animateValue('detail-co', parseFloat(card.querySelector('.co').textContent) || 0, 800);
+        animateValue('detail-no2', parseFloat(card.querySelector('.no2').textContent) || 0, 800);
+
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
+
+        document.getElementById('bar-good').style.width = '0%';
+        document.getElementById('bar-moderate').style.width = '0%';
+        document.getElementById('bar-bad').style.width = '0%';
 
         fetchCityHistory(city, 168);
         detailDrawer.show();
@@ -191,6 +250,10 @@ document.addEventListener('DOMContentLoaded', () => {
     toggle.addEventListener('click', () => {
         const light = document.body.classList.toggle('light-mode');
         localStorage.setItem('theme', light ? 'light' : 'dark');
+    });
+
+    document.getElementById('advice').addEventListener('click', () => {
+        alert('See more tips on reducing exposure to air pollution.');
     });
 
     cities.forEach(city => {

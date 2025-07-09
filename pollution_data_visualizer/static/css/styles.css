@@ -70,6 +70,14 @@ canvas {
         0 0 20px #39ff14;
 }
 
+.neon-warning {
+    color: #ff073a;
+    text-shadow:
+        0 0 5px #ff073a,
+        0 0 10px #ff073a,
+        0 0 20px #ff073a;
+}
+
 .progress-bar {
     transition: width 1s ease-in-out;
 }
@@ -86,4 +94,9 @@ canvas {
 
 .metric-label {
     font-weight: bold;
+}
+
+.metric-item:hover {
+    background-color: rgba(255,255,255,0.1);
+    cursor: pointer;
 }

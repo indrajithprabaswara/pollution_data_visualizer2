@@ -21,3 +21,16 @@
     box-shadow: none;
   }
 }
+
+.neon-glow {
+  animation: neonGlow 1s ease-in-out infinite alternate;
+}
+
+@keyframes neonGlow {
+  from {
+    text-shadow: 0 0 5px #39ff14, 0 0 10px #39ff14;
+  }
+  to {
+    text-shadow: 0 0 20px #39ff14, 0 0 30px #39ff14;
+  }
+}
