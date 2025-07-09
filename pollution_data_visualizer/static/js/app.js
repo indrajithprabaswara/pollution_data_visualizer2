@@ -59,6 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
 
+    function addCityToList(city) {
+        if (!cities.includes(city)) {
+            cities.push(city);
+            setInterval(() => fetchCityData(city), 1800000);
+        }
+    }
+
     function fetchWithTimeout(url, options = {}, timeout = 8000) {
         return Promise.race([
             fetch(url, options),
@@ -365,6 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 12000);
         try {
             await fetchCityData(city, true);
+            addCityToList(city);
         } finally {
             clearTimeout(enableTimer);
             hideLoading();
