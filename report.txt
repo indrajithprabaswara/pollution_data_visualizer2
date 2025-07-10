@@ -1,0 +1,34 @@
+This project is a Flask application that keeps air quality data. The main logic lives in `pollution_data_visualizer/app.py` where routes, background jobs and Prometheus metrics are defined. Data is collected from the AQICN API in `data_collector.py` and saved using the models in `models.py`. The helper functions in `data_analyzer.py` return averages and history data.
+
+`events.py` gives a small publish and subscribe queue. Events are sent during data collection and when searches occur. The application stores data in SQLite by default using SQLAlchemy.
+
+The front end uses templates and JavaScript from `static/js` and styling from `static/css`. The `Dockerfile` in the same folder builds an image ready for Cloud Run.
+
+Tests under `pollution_data_visualizer/tests` cover routes and data functions. Node tests in `tests_js` check browser logic. GitHub Actions in `.github/workflows` run these tests and build a Docker image.
+
+### A level checklist
+- **Web application** – `app.py` sets up Flask routes starting at line 68 for `/` and others【F:pollution_data_visualizer/app.py†L68-L119】.
+- **Data collection** – `fetch_air_quality` and `collect_data` in `data_collector.py` lines 7‑40 fetch from the API and store results【F:pollution_data_visualizer/data_collector.py†L7-L40】.
+- **Data analyzer** – `data_analyzer.py` provides `get_average_aqi`, `get_recent_aqi` and `get_aqi_history` starting at line 4【F:pollution_data_visualizer/data_analyzer.py†L4-L24】.
+- **Unit tests** – examples are in `tests/test_data_collector.py` and others, run with pytest.
+- **Data persistence** – SQLAlchemy models for `AirQualityData` are defined at lines 5‑14 in `models.py`【F:pollution_data_visualizer/models.py†L5-L14】.
+- **REST collaboration** – endpoints like `/api/summary` and `/api/coords/<city>` in `app.py` lines 139‑177 provide JSON results【F:pollution_data_visualizer/app.py†L139-L177】.
+- **Product environment** – `Dockerfile` builds the image for deployment【F:pollution_data_visualizer/Dockerfile†L1-L11】.
+- **Integration tests** – `tests/test_integration.py` uses Flask test client and mocks at lines 20‑60【F:pollution_data_visualizer/tests/test_integration.py†L20-L60】.
+- **Mock objects** – the same integration test patches API calls with `@patch`.
+- **Continuous integration** – `.github/workflows/ci.yml` installs dependencies and runs tests【F:.github/workflows/ci.yml†L24-L47】.
+- **Production monitoring** – `REQUEST_COUNT` and `AQI_GAUGE` metrics exported at lines 21‑35 in `app.py`【F:pollution_data_visualizer/app.py†L21-L35】 and the `/metrics` route at lines 186‑188【F:pollution_data_visualizer/app.py†L186-L188】.
+- **Event collaboration messaging** – events are published in `app.py` lines 50‑51 and 134 and consumed by the worker in `events.py`【F:pollution_data_visualizer/app.py†L50-L51】【F:pollution_data_visualizer/app.py†L134-L134】【F:pollution_data_visualizer/events.py†L11-L29】.
+- **Continuous delivery** – `.github/workflows/cd.yml` builds and pushes the Docker image【F:.github/workflows/cd.yml†L16-L34】.
+
+### Running the app
+1. Install Python packages:
+   `pip install -r pollution_data_visualizer/requirements.txt`
+2. Install Node packages:
+   `npm install`
+3. Start the server locally:
+   `python pollution_data_visualizer/app.py`
+4. To build the container for Cloud Run:
+   `docker build -t pollution-app -f pollution_data_visualizer/Dockerfile pollution_data_visualizer`
+
+The default site appears at http://localhost:5000. Use `/metrics` to get Prometheus metrics. Unit and integration tests can be run with `pytest` and `npm test`.
