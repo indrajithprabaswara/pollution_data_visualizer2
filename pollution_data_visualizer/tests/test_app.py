@@ -16,7 +16,6 @@ class TestApp(unittest.TestCase):
 
     def test_get_city_data(self):
         response = self.app.get('/data/Los Angeles')
-        # The endpoint may fail if external API is unreachable; ensure a response is returned
         self.assertIn(response.status_code, [200, 400])
 
     def test_about_page(self):
