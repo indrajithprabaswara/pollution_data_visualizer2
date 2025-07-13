@@ -11,7 +11,7 @@ from models import User, FavoriteCity
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
-
+import os
 
 monitored_cities = ['New York', 'Los Angeles', 'San Francisco', 'Paris', 'Delhi', 'Perth']
 
